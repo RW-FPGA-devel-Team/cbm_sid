@@ -99,6 +99,7 @@ architecture Behavioral of sid8580 is
 	signal Misc_8580_Env3	: unsigned(7 downto 0)	:= (others => '0');
 
 	signal do_buf				: unsigned(7 downto 0)	:= (others => '0');
+   signal last_wr				: unsigned(7 downto 0)	:= (others => '0');
 
 	signal voice_8580_1				: unsigned(11 downto 0)	:= (others => '0');
 	signal voice_8580_2				: unsigned(11 downto 0)	:= (others => '0');
@@ -293,7 +294,7 @@ begin
 	process (clk_1MHz)
 	begin
 	 
-	 if clk_1MHz = '1' then
+	 if falling_edge(clk_1MHz) then
 	   t_state <= 0;
 	 end if;
 	 t_state<=t_state+1;
@@ -426,6 +427,7 @@ begin
 
 				if (cs='1') then
 					if (we='1') then	-- Write to SID-register
+					last_wr <= din;
 								------------------------
 						case addr is
 							-------------------------------------- Voice-1	
@@ -471,8 +473,7 @@ begin
 							when "11011" =>	do_buf	<= Misc_Osc3_Random;
 							when "11100" =>	do_buf	<= Misc_8580_Env3;   -- TODO
 							--------------------------------------
-	--						when others	=>	null;
-							when others	=>	do_buf <= (others => '0');
+							when others	=>	do_buf <= last_wr;
 						end case;		
 					end if;
 				end if;

@@ -135,7 +135,8 @@ architecture Behavioral of sid6581 is
 	signal Misc_Env3			: unsigned(7 downto 0)	:= (others => '0');
 
 	signal do_buf				: unsigned(7 downto 0)	:= (others => '0');
-
+   signal last_wr				: unsigned(7 downto 0)	:= (others => '0');
+	
 	signal voice_1				: unsigned(11 downto 0)	:= (others => '0');
 	signal voice_2				: unsigned(11 downto 0)	:= (others => '0');
 	signal voice_3				: unsigned(11 downto 0)	:= (others => '0');
@@ -361,6 +362,7 @@ begin
 				if (cs='1') then     ------------------------
 					if (we='1') then	-- Write to SID-register
 								         ------------------------
+						last_wr <= din;
 						case addr is
 							-------------------------------------- Voice-1	
                      when "00000" =>	Voice_1_Freq_lo	<= din;
@@ -394,6 +396,19 @@ begin
 							--------------------------------------
 							when others	=>	null;
 						end case;
+											else			-- Read from SID-register
+							-------------------------
+						--case CONV_INTEGER(addr) is
+						case addr is
+							-------------------------------------- Misc
+							when "11001" =>	do_buf	<= pot_x;
+							when "11010" =>	do_buf	<= pot_y;
+							when "11011" =>	do_buf	<= Misc_Osc3_Random;
+							when "11100" =>	do_buf	<= Misc_Env3;  
+							--------------------------------------
+							when others	=>	do_buf <= last_wr;
+						end case;		
+	
 					end if;
 				end if;
 			end if;
