@@ -35,8 +35,10 @@ architecture beh of sid_filters_8580 is
 	alias volume      : unsigned(3 downto 0) is Mode_Vol(3 downto 0);
 	alias hp_bp_lp    : unsigned(2 downto 0) is Mode_Vol(6 downto 4);
 	alias voice3off   : std_logic is Mode_Vol(7);
+	
+	
 
-	constant mixer_DC : integer :=  -1024; -- NOTE to self: this might be wrong.
+	constant mixer_DC : integer :=  -2048; -- NOTE to self: this might be wrong.
 
 	type regs_type is record
 		Vhp   : signed(17 downto 0);
@@ -56,6 +58,11 @@ architecture beh of sid_filters_8580 is
 
 	signal addr : integer range 0 to 2047;
 	signal val  : unsigned(15 downto 0);
+	
+	signal mul1 : unsigned (35 downto 0);
+	signal mul2 : unsigned (35 downto 0);
+	signal mul3 : unsigned (35 downto 0);
+	signal mul4 : unsigned (35 downto 0);
 
 	type divmul_t is array(0 to 15) of integer;
 	constant divmul: divmul_t := (
@@ -89,12 +96,7 @@ begin
 
 	fc <= Fc_hi & Fc_lo(2 downto 0);
 
-	c: entity work.sid_coeffs
-	port map (
-		clk   => clk,
-		addr  => addr,
-		val   => val
-	);
+
 
 	addr <= to_integer(unsigned(fc));
 
@@ -105,7 +107,11 @@ begin
 		mula <= (others => 'X');
 		mulb <= (others => 'X');
 		mulen <= '0';
-
+		mul1 <= unsigned(w.w0 * w.Vhp);
+		mul2 <= unsigned(w.w0 * w.Vbp);
+		mul3 <= unsigned(w.q  * w.Vbp);
+		mul4 <= 82355 * (("0000000" & Fc_hi & Fc_lo(2 downto 0))+1) ;
+ 
 		case r.state is
 			when 0 =>
 				w.done := '0';
@@ -119,7 +125,9 @@ begin
 			when 1 =>
 				w.state := 2;
 				-- already have W0 ready. Always positive
-				w.w0 := "00" & signed(val);
+				w.w0 := signed(mul4(35) & mul4(28 downto 12));
+				
+				--w.w0 := "00" & signed(val);
 				-- 1st accumulation
 				if filt(0)='1' then
 					w.vi := r.vi + s13_to_18(voice1);
@@ -154,7 +162,7 @@ begin
 				mula <= r.w0;
 				mulb <= r.vbp;
 				mulen <= '1';
-				w.dVbp := mulr(35) & mulr(35 downto 19);
+				w.dVbp := signed(mul1(35) & mul1(35 downto 19));
 
 			when 4 =>
 				w.state := 5;
@@ -164,11 +172,11 @@ begin
 				else
 					w.vnf := r.vnf + s13_to_18(ext_in);
 				end if;
-				w.dVlp := mulr(35) & mulr(35 downto 19);
+				w.dVlp := signed(mul2(35) & mul2(35 downto 19));
 				w.Vbp := r.Vbp - r.dVbp;
 				-- Get Q, synchronous.
 				w.q := to_signed(divmul(to_integer(unsigned(res))), 18);
-
+				
 			when 5 =>
 				w.state := 6;
 				-- Ok, we have all summed. We performed multiplications for dVbp and dVlp.
@@ -187,7 +195,7 @@ begin
 			when 6 =>
 				w.state := 7;
 				-- Adjust Vbp*Q, shift by 10
-				w.Vhp := (mulr(35)&mulr(26 downto 10)) - r.vlp;
+				w.Vhp := signed(mul3(35)&mul3(26 downto 10)) - r.vlp;
 				if hp_bp_lp(0)='1' then
 					w.Vf := r.Vf + r.Vlp;
 				end if;
@@ -216,9 +224,7 @@ begin
 				w.state := 12;
 				-- Process volume
 				mulen <= '1';
-				mula <= r.Vf;
-				--mula <= r.Vnf - r.Vf;
-			   --mula <= r.Vnf + r.Vi;
+				mula <= r.Vnf + r.Vi;
 				mulb <= (others => '0');
 				mulb(3 downto 0) <= signed(volume);
 

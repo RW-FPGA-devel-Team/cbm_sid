@@ -141,7 +141,7 @@ architecture Behavioral of sid6581 is
 	signal voice_2				: unsigned(11 downto 0)	:= (others => '0');
 	signal voice_3				: unsigned(11 downto 0)	:= (others => '0');
 
-	signal divide_0			: unsigned(31 downto 0)	:= (others => '0');
+	--signal divide_0			: unsigned(31 downto 0)	:= (others => '0');
 	signal voice_1_PA_MSB	: std_logic := '0';
 	signal voice_2_PA_MSB	: std_logic := '0';
 	signal voice_3_PA_MSB	: std_logic := '0';
