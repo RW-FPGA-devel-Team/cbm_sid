@@ -396,9 +396,8 @@ begin
 							--------------------------------------
 							when others	=>	null;
 						end case;
-											else			-- Read from SID-register
+						else			-- Read from SID-register
 							-------------------------
-						--case CONV_INTEGER(addr) is
 						case addr is
 							-------------------------------------- Misc
 							when "11001" =>	do_buf	<= pot_x;

@@ -36,7 +36,7 @@ architecture beh of sid_filters_8580 is
 	alias hp_bp_lp    : unsigned(2 downto 0) is Mode_Vol(6 downto 4);
 	alias voice3off   : std_logic is Mode_Vol(7);
 
-	constant mixer_DC : integer :=  -413; -- NOTE to self: this might be wrong.
+	constant mixer_DC : integer :=  -1024; -- NOTE to self: this might be wrong.
 
 	type regs_type is record
 		Vhp   : signed(17 downto 0);

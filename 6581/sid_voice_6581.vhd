@@ -114,7 +114,18 @@ architecture Behavioral of sid_voice_6581 is
    );
 	end component sid_envelope;
 	-------------------------------------------------------------------------------------
-
+	function repeat(N: natural; B: std_logic)
+	  return std_logic_vector
+     is
+     variable result: std_logic_vector(1 to N);
+     begin
+       for i in 1 to N loop
+       result(i) := B;
+     end loop;
+     return result;
+   end;
+	--------------------------------------------------------------------------------------
+	
 	-- stop the oscillator when test = '1'
 	alias		test							: std_logic is Control(3);
 	-- Ring Modulation was accomplished by substituting the accumulator MSB of an
@@ -180,6 +191,7 @@ begin
 			sawtooth	<= accumulator(23 downto 12);
 		end if;
 	end process;
+
 
 	--Pulse waveform :
 	-- "The Pulse waveform was created by sending the upper 12-bits of the
@@ -266,8 +278,6 @@ begin
 			accu_bit_prev	<= accumulator(19);
 			-- when not equal to ...
 			if	(accu_bit_prev /= accumulator(19)) then
---				LFSR(22 downto 1)	<= LFSR(21 downto 0);
---				LFSR(0) 					<= LFSR(17) xor LFSR(22);  -- see Xilinx XAPP052 for maximal LFSR taps
 	         LFSR <= LFSR(21) 
 			           & signal_mux(11)
 						  & LFSR(19)
