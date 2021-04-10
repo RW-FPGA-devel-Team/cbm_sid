@@ -6,17 +6,17 @@ module sid_tables
 	input     [11:0] sawtooth,
 	input     [11:0] triangle,
 
-	output reg [7:0] w_st_out,
-	output reg [7:0] w_p_t_out,
-	output reg [7:0] w_ps_out,
-	output reg [7:0] w_pst_out
+	output reg [7:0] _st_out,
+	output reg [7:0] p_t_out,
+	output reg [7:0] ps__out,
+	output reg [7:0] pst_out
 );
 
 always @(posedge clock) begin
-	w_st_out <= wave__st[sawtooth];
-	w_p_t_out <= wave_p_t[triangle[11:1]];
-	w_ps_out <= wave_ps_[sawtooth];
-	w_pst_out <= wave_pst[sawtooth];
+	_st_out <= wave__st[sawtooth];
+	p_t_out <= wave_p_t[triangle[11:1]];
+	ps__out <= wave_ps_[sawtooth];
+	pst_out <= wave_pst[sawtooth];
 end
 
 //

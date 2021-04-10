@@ -114,7 +114,18 @@ architecture Behavioral of sid_voice_6581 is
    );
 	end component sid_envelope;
 	-------------------------------------------------------------------------------------
-
+	function repeat(N: natural; B: std_logic)
+	  return unsigned
+     is
+     variable result: unsigned(1 to N);
+     begin
+       for i in 1 to N loop
+       result(i) := B;
+     end loop;
+     return result;
+   end;
+	--------------------------------------------------------------------------------------
+	
 	-- stop the oscillator when test = '1'
 	alias		test							: std_logic is Control(3);
 	-- Ring Modulation was accomplished by substituting the accumulator MSB of an
@@ -180,6 +191,7 @@ begin
 			sawtooth	<= accumulator(23 downto 12);
 		end if;
 	end process;
+
 
 	--Pulse waveform :
 	-- "The Pulse waveform was created by sending the upper 12-bits of the
@@ -266,8 +278,6 @@ begin
 			accu_bit_prev	<= accumulator(19);
 			-- when not equal to ...
 			if	(accu_bit_prev /= accumulator(19)) then
---				LFSR(22 downto 1)	<= LFSR(21 downto 0);
---				LFSR(0) 					<= LFSR(17) xor LFSR(22);  -- see Xilinx XAPP052 for maximal LFSR taps
 	         LFSR <= LFSR(21) 
 			           & signal_mux(11)
 						  & LFSR(19)
@@ -301,6 +311,27 @@ begin
 	-- which produced unpredictable results, so I didn't encourage this, especially
 	-- since it could lock up the pseudo-random sequence generator by filling it
 	-- with zeroes."
+	
+--	Snd_select:process(clk_1MHz)
+--	begin
+--		if (rising_edge(clk_1MHz)) then 
+--	   	if reset = '1' then
+--				signal_mux <= (others => '0');
+--			else
+--			   
+--				case control(7 downto 4) is
+-----				 when "0000" => signal_mux <= (others => '0');
+--				 when "0001" => signal_mux <= triangle;
+--				 when "0010" => signal_mux <= sawtooth;
+--				 when "0011" => signal_mux <= triangle and sawtooth;
+--				 when "0100" => signal_mux <= repeat(12,pulse);
+--				 when "0101" => signal_mux <= triangle and repeat(12,pulse);
+--				 when "1000" => signal_mux <= noise;
+--				 when others => null;
+--				end case;
+--			end if;
+--		end if;
+--	end process;
 	Snd_select:process(clk_1MHz)
 	begin
 		if (rising_edge(clk_1MHz) and Control (7 downto 4) /= "0000") then
